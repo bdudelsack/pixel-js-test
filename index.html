@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style type="text/css">
+        html,
+        body {
+            margin: 0;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        /* Scale canvas with resize attribute to full size */
+        canvas[resize] {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <script type="text/javascript" src="node_modules/paper/dist/paper-full.min.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var raster = new Raster('mona');
+        raster.position = view.center;
+
+        // Hide the raster:
+        raster.visible = false;
+
+        // The size of our grid cells:
+        var gridSize = 17;
+
+        // Space the cells by 120%:
+        var spacing = 0.55;
+
+        raster.on('load', function() {
+            raster.size *= 0.05;
+
+            for (var y = 0; y < raster.height; y++) {
+                for(var x = 0; x < raster.width; x++) {
+                    // Get the color of the pixel:
+                    var color = raster.getPixel(x, y);
+
+                    // Create a circle shaped path:
+                    // var path = new Path.Rectangle({
+                    //     point: new Point(x, y) * gridSize,
+                    //     size: [gridSize / 2 / spacing, gridSize / 2 / spacing],
+                    //     strokeColor: 'black',
+                    //     fillColor: color.gray,
+                    // });
+
+                    var rotate = (x % 2) == (y % 2)
+                    drawZigZag(new Point(x, y) * gridSize,new Size(gridSize / 2 / spacing, gridSize / 2 / spacing), Math.floor((1 - color.gray) * 5), rotate)
+
+                    // Scale the path by the amount of gray in the pixel color:
+                    //path.scale(1 - color.gray);
+                }
+            }
+
+            project.activeLayer.position = view.center;
+
+            //document.body.append(project.exportSVG())
+        });
+
+        function drawZigZag(point, size, steps, rotate) {
+            // var border = new Path.Rectangle({
+            //     point: point,
+            //     size: size,
+            //     strokeColor: 'red',
+            // })
+
+            var line = new Path({
+                strokeColor: 'black'
+            })
+
+            var step = size.height / steps
+
+            for(var i = 0; i < steps; i++) {
+                line.add(new Point(0,step * i) + point, new Point(size.width, step * (i+0.5)) + point)
+            }
+
+            line.add(new Point(0,size.height) + point)
+
+            line.scale(0.9)
+
+            if(rotate) {
+                line.rotate(90)
+            }
+        }
+
+        project.activeLayer.position = view.center;
+    </script>
+</head>
+<body>
+<img src="images/mona.jpg" id="mona" style="display: none;" />
+<canvas id="canvas" resize></canvas>
+</body>
+</html>
